@@ -59,6 +59,9 @@ const ConnectionErrorPage: FC<ConnectionErrorPageProps> = ({
 
     if (!title) return;
 
+    const retrySupported = state === ConnectionState.Unavailable
+        || state === ConnectionState.ServerMismatch;
+
     return (
         <Page
             id='connectionErrorPage'
@@ -77,6 +80,12 @@ const ConnectionErrorPage: FC<ConnectionErrorPageProps> = ({
                 {message && (
                     <p style={{ maxWidth: '80ch' }}>
                         {message}
+                    </p>
+                )}
+
+                {retrySupported && (
+                    <p className='connectionErrorHint' style={{ maxWidth: '80ch', opacity: 0.7 }}>
+                        {globalize.translate('CheckNetworkAndServerStatus')}
                     </p>
                 )}
 
