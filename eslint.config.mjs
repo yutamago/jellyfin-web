@@ -420,5 +420,45 @@ export default tseslint.config(
             'sonarjs/no-nested-functions': 'off',
             'sonarjs/void-use': 'off'
         }
+    },
+
+    // Hooks directory — stricter exhaustive-deps and no-floating-promises
+    {
+        files: [ 'src/hooks/**/*.{ts,tsx}' ],
+        rules: {
+            'react-hooks/exhaustive-deps': 'error',
+            '@typescript-eslint/no-floating-promises': 'error',
+            '@typescript-eslint/consistent-return': 'error',
+            '@typescript-eslint/no-unnecessary-condition': 'warn',
+            'no-console': ['warn', { allow: ['warn', 'error'] }]
+        }
+    },
+
+    // Utils directory — no side-effects, pure functions preferred
+    {
+        files: [ 'src/utils/**/*.{ts,tsx}' ],
+        rules: {
+            'no-console': 'error',
+            '@typescript-eslint/no-floating-promises': 'error',
+            'sonarjs/no-duplicate-string': ['warn', { threshold: 4 }],
+            'prefer-const': 'error',
+            'no-param-reassign': 'error'
+        }
+    },
+
+    // Types directory — structural completeness checks
+    {
+        files: [ 'src/types/**/*.ts' ],
+        rules: {
+            '@typescript-eslint/consistent-type-definitions': ['error', 'interface'],
+            '@typescript-eslint/no-empty-interface': ['error', { allowSingleExtends: true }],
+            'no-restricted-syntax': [
+                'error',
+                {
+                    selector: 'TSEnumDeclaration',
+                    message: 'Use const objects or union types instead of enums.'
+                }
+            ]
+        }
     }
 );
