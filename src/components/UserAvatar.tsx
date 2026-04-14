@@ -12,8 +12,13 @@ interface UserAvatarProps {
 const UserAvatar: FC<UserAvatarProps> = ({ user }) => {
     const { api } = useApi();
 
+    const ariaLabel = user?.Name
+        ? `User avatar for ${user.Name}`
+        : 'User avatar';
+
     return user ? (
         <Avatar
+            aria-label={ariaLabel}
             alt={user.Name ?? undefined}
             src={
                 api && user.Id && user.PrimaryImageTag ?
