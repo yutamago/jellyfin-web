@@ -1,5 +1,7 @@
 {
     "Absolute": "Absolute",
+    "EmptyQueueMessage": "Your play queue is empty. Add some media to get started.",
+    "EndOfPlaylistMessage": "You have reached the end of the playlist.",
     "AccessRestrictedTryAgainLater": "Access is currently restricted. Please try again later.",
     "Actor": "Actor",
     "ActivitiesLoadError": "Failed to load activities",
