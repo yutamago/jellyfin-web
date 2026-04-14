@@ -103,6 +103,13 @@ class HtmlAudioPlayer {
             self._timeUpdated = false;
             self._currentTime = null;
 
+            // Initialise audio-track tracking state for the new playback session.
+            // _lastAppliedAudioStreamIndex tracks the index that was last successfully
+            // applied so we can detect when the user's requested index differs from
+            // what the media element is currently presenting, e.g. after a source
+            // change triggered by gapless playback or a seek-across-source boundary.
+            self._lastAppliedAudioStreamIndex = options.audioStreamIndex ?? null;
+
             const elem = createMediaElement();
 
             return setCurrentSrc(elem, options);
@@ -229,6 +236,9 @@ class HtmlAudioPlayer {
             const elem = self._mediaElement;
             const src = self._currentSrc;
 
+            // Reset track-selection state so stale index is not carried over to the next item
+            self._lastAppliedAudioStreamIndex = null;
+
             if (elem && src) {
                 if (!destroyPlayer || !supportsFade()) {
                     elem.pause();
@@ -338,6 +348,19 @@ class HtmlAudioPlayer {
                 this.removeAttribute('controls');
 
                 htmlMediaHelper.seekOnPlaybackStart(self, e.target, self._currentPlayOptions.playerStartPositionTicks);
+
+                // Reset the remembered audio track index when a new media item starts playing.
+                // Without this, the index from a previous item is carried over and the wrong
+                // track may be pre-selected when the media element fires 'playing' for a new
+                // source that has a different number of audio tracks.
+                if (self._currentPlayOptions
+                    && self._currentPlayOptions.audioStreamIndex !== self._lastAppliedAudioStreamIndex) {
+                    self._lastAppliedAudioStreamIndex = self._currentPlayOptions.audioStreamIndex ?? null;
+                    console.debug(
+                        '[htmlAudioPlayer] Applied audio stream index on play start:',
+                        self._lastAppliedAudioStreamIndex
+                    );
+                }
             }
             Events.trigger(self, 'playing');
         }
@@ -395,6 +418,36 @@ class HtmlAudioPlayer {
 
     currentSrc() {
         return this._currentSrc;
+    }
+
+    currentAudioStreamIndex() {
+        return this._lastAppliedAudioStreamIndex ?? null;
+    }
+
+    setAudioStreamIndex(index) {
+        if (!Number.isInteger(index) || index < 0) {
+            console.warn('[htmlAudioPlayer] setAudioStreamIndex: invalid index', index);
+            return;
+        }
+
+        const mediaElement = this._mediaElement;
+        if (!mediaElement) {
+            console.warn('[htmlAudioPlayer] setAudioStreamIndex: no media element');
+            return;
+        }
+
+        const audioTracks = mediaElement.audioTracks;
+        if (!audioTracks || audioTracks.length === 0) {
+            this._lastAppliedAudioStreamIndex = index;
+            return;
+        }
+
+        for (let i = 0; i < audioTracks.length; i++) {
+            audioTracks[i].enabled = (i === index);
+        }
+
+        this._lastAppliedAudioStreamIndex = index;
+        console.debug('[htmlAudioPlayer] Audio stream index applied:', index);
     }
 
     canPlayMediaType(mediaType) {
